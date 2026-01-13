@@ -4,11 +4,9 @@ import joblib
 import pandas as pd
 
 app = FastAPI()
-model = joblib.load("breast_cancer_pipeline.pkl")
-
-# Extract real training schema
-ALL_FEATURES = list(model.feature_names_in_)
-SELECTED = ["radius_worst", "perimeter_worst", "concave_points_worst"]
+bundle = joblib.load("breast_cancer_pipeline.pkl")
+model = bundle["model"]
+ALL_FEATURES = bundle["features"]
 
 class Patient(BaseModel):
     radius_worst: float
