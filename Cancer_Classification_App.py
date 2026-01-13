@@ -1,67 +1,56 @@
-# Turning Breast_Cancer_Classification into a streamlit app
-
-# Importing Libraries
 import streamlit as st
-import pandas as pd 
-from sklearn import datasets 
-import joblib
+import pandas as pd
+import requests
 
-# Load the model 
-model = joblib.load('Breast_Cancer_Classification.pkl')
+st.set_page_config(page_title="Breast Cancer Predictor", layout="centered")
 
-# Mapping class labels
-class_names = ['Benign', 'Malignant']
-
-# Writing title with a description 
-st.write("""
-# Breast Cancer Predictor 
-
-This application uses a Logistic Regression model trained on the **Kaggle Breast Cancer Wisconsin dataset** to predict whether a tumor is **benign** or **malignant** based on key features.
-
-Achieved an accuracy of **94%** on the test set.
+st.title("Breast Cancer Risk Prediction System")
+st.markdown("""
+This app connects to a deployed **FastAPI service** for real-time cancer risk prediction  
+and continuously logs model behavior for drift monitoring.
 """)
 
-# Adding a sidebar for asthetics 
-st.sidebar.header("User Input Parameters")
+st.sidebar.header("Patient Measurements")
 
-# Adding features 
-# 'radius_mean', 'texture_mean', 'perimeter_mean', 'area_mean', 'smoothness_mean'   
-def user_input_features():
-    radius_mean = st.sidebar.slider('mean radius', 6.00, 28.50, 13.44) 
-    texture_mean = st.sidebar.slider('texture mean', 9.50, 39.30, 23.37)
-    perimeter_mean = st.sidebar.slider('perimeter mean', 43.5, 188.6, 105.51)
-    area_mean = st.sidebar.slider('area mean', 143.0, 2501.0, 1256.77)
-    smoothness_mean = st.sidebar.slider('smoothness_mean', 0.05263, 0.16340, 0.05263)
-    data = {'radius_mean' : radius_mean,
-            'texture_mean' : texture_mean,
-            'perimeter_mean' : perimeter_mean,
-            'area_mean' : area_mean,
-            'smoothness_mean' : smoothness_mean}
-    features = pd.DataFrame(data, index=[0])
-    return features 
+def user_input():
+    radius_worst = st.sidebar.slider('Radius (worst)', 7.0, 36.0, 16.0)
+    perimeter_worst = st.sidebar.slider('Perimeter (worst)', 50.0, 250.0, 110.0)
+    concave_points_worst = st.sidebar.slider('Concave Points (worst)', 0.0, 0.30, 0.10)
 
-df = user_input_features()
+    return {
+        "radius_worst": radius_worst,
+        "perimeter_worst": perimeter_worst,
+        "concave_points_worst": concave_points_worst
+    }
 
-st.subheader('User Input Parameters')
-st.write(df)
+data = user_input()
+st.subheader("User Input")
+st.write(pd.DataFrame([data]))
 
-# Show Class Labels
-st.subheader("Class labels and their corresponding index number")
-st.write(pd.DataFrame(class_names, columns=["value"]))
+# ---------- API CALL ----------
+if st.button("Predict"):
+    response = requests.post(" http://127.0.0.1:8000/predict", json=data)
 
-# Predictions
-prediction = model.predict(df)
-prediction_proba = model.predict_proba(df)
+    if response.status_code == 200:
+        prob = response.json()["cancer_probability"]
+        st.success(f"Malignancy Probability: {prob}")
 
-# Class labels
-st.subheader("Class labels and their corresponding index number")
-st.write(pd.DataFrame(class_names, columns=["value"]))
+    else:
+        st.error("API Error – ensure FastAPI server is running.")
 
-# Prediction
-st.subheader("Prediction")
-pred_df = pd.DataFrame({'value': [prediction[0]]})
-st.write(pred_df)
+# ---------- STEP 4 : MODEL MONITORING ----------
+st.markdown("---")
+st.subheader("Model Monitoring Dashboard")
 
-# Prediction Probability
-st.subheader("Prediction Probability")
-st.write(pd.DataFrame(prediction_proba, columns=class_names))
+try:
+    logs = pd.read_csv("predictions.csv", header=None)
+    logs.columns = list(data.keys()) + ["prediction", "timestamp"]
+
+    st.write("Recent Predictions")
+    st.dataframe(logs.tail())
+
+    st.write("Prediction Drift Over Time")
+    st.line_chart(logs["prediction"])
+
+except:
+    st.info("No logs yet. Run predictions to generate monitoring data.")
