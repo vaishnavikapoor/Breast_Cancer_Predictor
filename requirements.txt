@@ -1,8 +1,0 @@
-fastapi
-uvicorn
-gunicorn
-numpy==1.26.4
-scikit-learn==1.3.2
-pandas
-joblib
-streamlit
