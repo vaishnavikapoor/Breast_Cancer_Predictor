@@ -67,7 +67,6 @@ try:
         st.write("Recent Predictions")
         st.dataframe(df)
 
-        st.write("Malignancy Risk Over Time")
         import altair as alt
 
         df["timestamp"] = pd.to_datetime(df["timestamp"])
