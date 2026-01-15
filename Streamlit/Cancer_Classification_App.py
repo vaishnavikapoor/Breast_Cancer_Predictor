@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import requests
 
+API_BASE = "https://breast-cancer-predictor-4vi0.onrender.com"
+
 st.set_page_config(page_title="Breast Cancer Predictor", layout="centered")
 
 st.title("Breast Cancer Risk Prediction System")
@@ -13,59 +15,46 @@ and continuously logs model behavior for drift monitoring.
 st.sidebar.header("Patient Measurements")
 
 def user_input():
-    radius_worst = st.sidebar.slider('Radius (worst)', 7.0, 36.0, 16.0)
-    perimeter_worst = st.sidebar.slider('Perimeter (worst)', 50.0, 250.0, 110.0)
-    concave_points_worst = st.sidebar.slider('Concave Points (worst)', 0.0, 0.30, 0.10)
-
     return {
-        "radius_worst": radius_worst,
-        "perimeter_worst": perimeter_worst,
-        "concave_points_worst": concave_points_worst
+        "radius_worst": st.sidebar.slider("Radius (worst)", 7.0, 36.0, 16.0),
+        "perimeter_worst": st.sidebar.slider("Perimeter (worst)", 50.0, 250.0, 110.0),
+        "concave_points_worst": st.sidebar.slider("Concave Points (worst)", 0.0, 0.30, 0.10)
     }
 
 data = user_input()
+
 st.subheader("User Input")
 st.write(pd.DataFrame([data]))
 
-# ---------- API CALL ----------
+# ---------- PREDICTION ----------
 if st.button("Predict"):
     try:
-        response = requests.post(
-            "https://breast-cancer-predictor-4vi0.onrender.com/predict",
-            json=data,
-            timeout=30
-        )
+        res = requests.post(f"{API_BASE}/predict", json=data, timeout=30)
+        result = res.json()
 
-        st.write("Status code:", response.status_code)
-        st.write("Raw response:", response.text)
-
-        if response.status_code == 200:
-            result = response.json()
-
-            st.success(f"Prediction: {result['prediction']}")
-            st.info(f"Malignant Probability: {round(result['probability_malignant']*100, 2)}%")
-            st.info(f"Benign Probability: {round(result['probability_benign']*100, 2)}%")
-
-        else:
-            st.error("API Error")
+        st.success(f"Prediction: {result['prediction']}")
+        st.info(f"Malignant Probability: {round(result['probability_malignant']*100, 2)}%")
+        st.info(f"Benign Probability: {round(result['probability_benign']*100, 2)}%")
 
     except Exception as e:
-        st.error(f"Request failed: {e}")
+        st.error(f"Prediction failed: {e}")
 
-
-# ---------- STEP 4 : MODEL MONITORING ----------
 st.markdown("---")
 st.subheader("Model Monitoring Dashboard")
 
 try:
-    logs = pd.read_csv("predictions.csv", header=None)
-    logs.columns = list(data.keys()) + ["prediction", "timestamp"]
+    logs = requests.get(f"{API_BASE}/logs", timeout=20).json()
 
-    st.write("Recent Predictions")
-    st.dataframe(logs.tail())
+    if len(logs) == 0:
+        st.info("No predictions logged yet.")
+    else:
+        df = pd.DataFrame(logs)
 
-    st.write("Prediction Drift Over Time")
-    st.line_chart(logs["prediction"])
+        st.write("Recent Predictions")
+        st.dataframe(df)
+
+        st.write("Malignant Probability Drift")
+        st.line_chart(df["probability_malignant"])
 
 except:
-    st.info("No logs yet. Run predictions to generate monitoring data.")
+    st.warning("Monitoring service unavailable.")
