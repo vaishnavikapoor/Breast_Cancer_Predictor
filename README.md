@@ -9,7 +9,12 @@ This project implements a complete machine learning pipeline for breast cancer m
 The objective is to determine the minimum number of tumor morphology features required to maintain near-optimal classification performance.
 
 ---
+## 🚀 Live Application
 
+- **Streamlit UI:** [https://your-streamlit-link  ](https://breastcancerpredictor-qh2pmhoyhkuxnp5c2af6uh.streamlit.app/)
+- **FastAPI Backend:** https://breast-cancer-predictor-4vi0.onrender.com/docs
+
+---
 ## Model Design
 
 A Scikit-Learn pipeline is used to ensure reproducibility and numerical stability:
