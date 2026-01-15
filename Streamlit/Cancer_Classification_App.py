@@ -68,9 +68,23 @@ try:
         st.dataframe(df)
 
         st.write("Malignancy Risk Over Time")
-        st.line_chart(
-            data=df.set_index("timestamp")["Malignancy Probability"]
+        import altair as alt
+
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+
+        chart = (
+            alt.Chart(df)
+            .mark_line(point=True)
+            .encode(
+                x=alt.X("timestamp:T", title="Time of Prediction"),
+                y=alt.Y("Malignancy Probability:Q", title="Probability of Malignancy"),
+                tooltip=["timestamp", "Malignancy Probability"]
+            )
+            .properties(title="Malignancy Risk Drift Over Time")
         )
+
+        st.altair_chart(chart, use_container_width=True)
+
 
 except:
     st.warning("Monitoring service unavailable.")
