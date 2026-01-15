@@ -29,14 +29,25 @@ st.write(pd.DataFrame([data]))
 
 # ---------- API CALL ----------
 if st.button("Predict"):
-    response = requests.post("http://127.0.0.1:8000/predict", json=data)
+    try:
+        response = requests.post(
+            "https://breast-cancer-predictor-4vi0.onrender.com/predict",
+            json=data,
+            timeout=30
+        )
 
-    if response.status_code == 200:
-        prob = response.json()["cancer_probability"]
-        st.success(f"Malignancy Probability: {prob}")
+        st.write("Status code:", response.status_code)
+        st.write("Raw response:", response.text)
 
-    else:
-        st.error("API Error – ensure FastAPI server is running.")
+        if response.status_code == 200:
+            prob = response.json()["cancer_probability"]
+            st.success(f"Malignancy Probability: {prob}")
+        else:
+            st.error("API Error")
+
+    except Exception as e:
+        st.error(f"Request failed: {e}")
+
 
 # ---------- STEP 4 : MODEL MONITORING ----------
 st.markdown("---")
