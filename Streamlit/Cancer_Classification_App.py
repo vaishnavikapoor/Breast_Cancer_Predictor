@@ -16,10 +16,17 @@ st.sidebar.header("Patient Measurements")
 
 def user_input():
     return {
-        "radius_worst": st.sidebar.slider("Radius (worst)", 7.0, 36.0, 16.0),
-        "perimeter_worst": st.sidebar.slider("Perimeter (worst)", 50.0, 250.0, 110.0),
-        "concave_points_worst": st.sidebar.slider("Concave Points (worst)", 0.0, 0.30, 0.10)
+        "radius_worst": st.sidebar.slider(
+            "Tumor Radius (largest size of tumor)", 7.0, 36.0, 16.0
+        ),
+        "perimeter_worst": st.sidebar.slider(
+            "Tumor Perimeter (boundary length)", 50.0, 250.0, 110.0
+        ),
+        "concave_points_worst": st.sidebar.slider(
+            "Tumor Irregularity (how indented the edges are)", 0.0, 0.30, 0.10
+        )
     }
+
 
 data = user_input()
 
@@ -50,11 +57,20 @@ try:
     else:
         df = pd.DataFrame(logs)
 
+        df.rename(columns={
+            "radius_worst": "Tumor Radius",
+            "perimeter_worst": "Tumor Perimeter",
+            "concave_points_worst": "Tumor Irregularity",
+            "probability_malignant": "Malignancy Probability"
+        }, inplace=True)
+
         st.write("Recent Predictions")
         st.dataframe(df)
 
-        st.write("Malignant Probability Drift")
-        st.line_chart(df["probability_malignant"])
+        st.write("Malignancy Risk Over Time")
+        st.line_chart(
+            data=df.set_index("timestamp")["Malignancy Probability"]
+        )
 
 except:
     st.warning("Monitoring service unavailable.")
