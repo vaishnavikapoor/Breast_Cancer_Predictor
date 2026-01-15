@@ -46,7 +46,6 @@ if st.button("Predict"):
             st.info(f"Malignant Probability: {round(result['probability_malignant']*100, 2)}%")
             st.info(f"Benign Probability: {round(result['probability_benign']*100, 2)}%")
 
-            st.success(f"Malignancy Probability: {prob}")
         else:
             st.error("API Error")
 
