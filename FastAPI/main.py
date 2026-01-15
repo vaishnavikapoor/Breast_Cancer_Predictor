@@ -4,6 +4,9 @@ import joblib
 import pandas as pd
 
 app = FastAPI()
+@app.get("/")
+def home():
+    return {"status": "ok"}
 bundle = joblib.load("breast_cancer_pipeline.pkl")
 model = bundle["model"]
 ALL_FEATURES = bundle["features"]
