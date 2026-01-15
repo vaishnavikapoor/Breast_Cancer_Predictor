@@ -40,7 +40,12 @@ if st.button("Predict"):
         st.write("Raw response:", response.text)
 
         if response.status_code == 200:
-            prob = response.json()["cancer_probability"]
+            result = response.json()
+
+            st.success(f"Prediction: {result['prediction']}")
+            st.info(f"Malignant Probability: {round(result['probability_malignant']*100, 2)}%")
+            st.info(f"Benign Probability: {round(result['probability_benign']*100, 2)}%")
+
             st.success(f"Malignancy Probability: {prob}")
         else:
             st.error("API Error")
