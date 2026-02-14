@@ -13,6 +13,7 @@ The objective is to determine the minimum number of tumor morphology features re
 
 - **Streamlit UI:** [https://your-streamlit-link  ](https://breastcancerpredictor-qh2pmhoyhkuxnp5c2af6uh.streamlit.app/)
 - **FastAPI Backend:** https://breast-cancer-predictor-4vi0.onrender.com/docs
+![example](https://github.com/vaishnavikapoor/Breast_Cancer_Predictor/blob/main/Screenshots/cancer_detector.png)
 
 ---
 ## Model Design
