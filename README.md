@@ -55,6 +55,19 @@ The optimized pipeline eliminates convergence issues observed in the baseline mo
 The system consists of a Streamlit user interface connected to a FastAPI backend that serves predictions from the trained pipeline. All predictions are logged and visualized in a monitoring dashboard.
 
 ---
+## System Engineering & Reliability
+
+- Packaged the entire preprocessing, feature selection and model inference into a single Scikit-Learn pipeline to prevent training–serving skew.
+
+- Implemented input validation and numerical stability safeguards to avoid convergence issues observed in baseline models.
+
+- Deployed the trained pipeline behind a FastAPI service and exposed inference endpoints for programmatic access.
+
+- Logged inference requests and predictions for monitoring and post-deployment analysis.
+
+- Designed the system to support both interactive (Streamlit) and API-based usage.
+
+---
 
 ## API Specification
 
